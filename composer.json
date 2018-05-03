@@ -2,13 +2,13 @@
   "name": "gmo/salesforce-rest-api",
   "license": "MIT",
   "require": {
-    "psr/log": "1.0.0",
-    "guzzle/guzzle": "3.9.2",
-    "php": ">=5.3"
+    "psr/log": "^1.0.0",
+    "guzzle/guzzle": "~6.0",
+    "php": ">=5.5"
   },
   "autoload": {
     "psr-4": {
-      "Gmo\\Salesforce\\": "src/"
+      "Obto\\Salesforce\\": "src/"
     }
   }
 }
