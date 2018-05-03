@@ -1,5 +1,5 @@
 <?php
-namespace Gmo\Salesforce\Exception;
+namespace Obto\Salesforce\Exception;
 
 
 class SalesforceAuthentication extends Salesforce

@@ -5,8 +5,7 @@ A simple PHP client for the Salesforce REST API
 
 Install with composer:
 ```
-composer config repositories.salesforce-rest-api vcs https://github.com/gmo/salesforce-rest-api
-composer require "gmo/salesforce-rest-api:^1.0"
+composer require "Obto/salesforce-rest-api"
 ```
 
 ## Usage
@@ -14,8 +13,8 @@ composer require "gmo/salesforce-rest-api:^1.0"
 Initialize the `Salesforce\Client` class, call the APIs you want.
 
 ```php
-use Gmo\Salesforce;
-use Gmo\Salesforce\Exception;
+use Obto\Salesforce;
+use Obto\Salesforce\Exception;
 use Guzzle\Http;
 
 $authentication = new Salesforce\Authentication\PasswordAuthentication(
@@ -37,7 +36,7 @@ try {
 	foreach($contactQueryResults as $queryResult) {
 		print_r($queryResult);  // The output of a single record from the query API JSON, converted to associative array
 	}
-	
+
     $contactQueryResults2 = $salesforce->query("SELECT AccountId, LastName
         FROM Contact
         WHERE FirstName = :firstName",

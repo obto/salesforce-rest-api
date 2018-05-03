@@ -1,7 +1,7 @@
 <?php
-namespace Gmo\Salesforce\Authentication;
+namespace Obto\Salesforce\Authentication;
 
-use Gmo\Salesforce\Exception;
+use Obto\Salesforce\Exception;
 
 interface AuthenticationInterface
 {

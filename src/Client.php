@@ -1,8 +1,8 @@
 <?php
-namespace Gmo\Salesforce;
+namespace Obto\Salesforce;
 
-use Gmo\Salesforce\Authentication\AuthenticationInterface;
-use Gmo\Salesforce\Exception;
+use Obto\Salesforce\Authentication\AuthenticationInterface;
+use Obto\Salesforce\Exception;
 use Guzzle\Http;
 use Guzzle\Http\Exception\ClientErrorResponseException;
 use Psr\Log\LoggerAwareInterface;

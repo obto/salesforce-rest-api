@@ -1,11 +1,11 @@
 <?php
-namespace Gmo\Salesforce\Authentication;
+namespace Obto\Salesforce\Authentication;
 
 use Guzzle\Http;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
-use Gmo\Salesforce\Exception;
+use Obto\Salesforce\Exception;
 
 class PasswordAuthentication implements AuthenticationInterface, LoggerAwareInterface
 {

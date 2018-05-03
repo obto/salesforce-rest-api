@@ -1,5 +1,5 @@
 <?php
-namespace Gmo\Salesforce;
+namespace Obto\Salesforce;
 
 class QueryResults
 {
