@@ -3,8 +3,6 @@ namespace Obto\Salesforce;
 
 use Obto\Salesforce\Authentication\AuthenticationInterface;
 use Obto\Salesforce\Exception;
-use Guzzle\Http;
-use Guzzle\Http\Exception\ClientErrorResponseException;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
@@ -17,32 +15,31 @@ class Client implements LoggerAwareInterface
     protected $apiBaseUrl;
     /** @var LoggerInterface */
     protected $log;
-    /** @var  Http\Client */
+    /** @var \GuzzleHttp\Client */
     protected $guzzle;
     /** @var AuthenticationInterface */
     protected $authentication;
+    protected $accessToken = null;
 
     /**
      * Creates a Salesforce REST API client that uses username-password authentication
      * @param AuthenticationInterface $authentication
-     * @param Http\Client $guzzle
      * @param string $apiRegion The region to use for the Salesforce API.  i.e. na5 or cs30
      * @param string $apiVersion The version of the API to use.  i.e. v31.0
      * @param LoggerInterface $log
      */
     public function __construct(
         AuthenticationInterface $authentication,
-        Http\Client $guzzle,
         $apiRegion,
-        $apiVersion = 'v31.0',
+        $apiVersion = 'v41.0',
         LoggerInterface $log = null
     ) {
         $this->apiBaseUrl = str_replace(array('{region}', '{version}'), array($apiRegion, $apiVersion),
             static::SALESFORCE_API_URL_PATTERN);
         $this->log = $log ?: new NullLogger();
         $this->authentication = $authentication;
-        $this->guzzle = $guzzle;
-        $this->guzzle->setBaseUrl($this->apiBaseUrl);
+
+        $this->guzzle = new \GuzzleHttp\Client(['base_uri' => $this->apiBaseUrl]);
     }
 
     /**
@@ -162,37 +159,38 @@ class Client implements LoggerAwareInterface
         );
     }
 
-    protected function get($path, $headers = array(), $body = null, $options = array())
+    protected function get($path, $headers = array())
     {
-        return $this->requestWithAutomaticReauthorize('GET', $path, $headers, $body, $options);
+        return $this->requestWithAutomaticReauthorize('GET', $path, $headers);
     }
 
     protected function requestWithAutomaticReauthorize(
         $type,
         $path,
         $headers = array(),
-        $body = null,
-        $options = array()
+        $body = null
     ) {
         try {
-            return $this->request($type, $path, $headers, $body, $options);
+            return $this->request($type, $path, $headers, $body);
         } catch (Exception\SessionExpired $e) {
-            $this->authentication->invalidateAccessToken();
-            $this->setAccessTokenInGuzzleFromAuthentication();
-
-            return $this->request($type, $path, $headers, $body, $options);
+            $this->getNewAccessToken();
+            return $this->request($type, $path, $headers, $body);
         }
     }
 
-    protected function request($type, $path, $headers = array(), $body = null, $options = array())
+    protected function request($type, $path, $headers = array(), $body = null)
     {
-        $this->initializeGuzzle();
-        $request = $this->guzzle->createRequest($type, $path, $headers, $body, $options);
-        try {
-            $response = $request->send();
-            $responseBody = $response->getBody();
+        $accessToken = $this->getAccessToken();
+        $headers = array_marge($headers, ['Authorization' => "Bearer {$accessToken}"]);
 
-        } catch (ClientErrorResponseException $e) {
+        $responseBody;
+        try {
+            $response = $this->guzzle->request($type, $path, [
+                'headers' => $headers,
+                'body' => $body,
+            ]);
+            $responseBody = $response->getBody();
+        } catch (\GuzzleHttp\Exception\BadResponseException $e) {
             $response = $e->getResponse();
             $responseBody = $response->getBody();
             $message = $responseBody;
@@ -218,22 +216,23 @@ class Client implements LoggerAwareInterface
         return $responseBody;
     }
 
-    /**
-     * Lazy loads the access token by running authentication and setting the access token into the $this->guzzle headers
-     */
-    protected function initializeGuzzle()
-    {
-        if ($this->guzzle->getDefaultOption('headers/Authorization')) {
-            return;
+    protected function getAccessToken() {
+        if (!empty($this->accessToken)) {
+            return $this->accessToken;
         }
 
-        $this->setAccessTokenInGuzzleFromAuthentication();
+        $this->accessToken = $this->authentication->getAccessToken();
+        return $this->accessToken;
     }
 
-    protected function setAccessTokenInGuzzleFromAuthentication()
-    {
-        $accessToken = $this->authentication->getAccessToken();
-        $this->guzzle->setDefaultOption('headers/Authorization', "Bearer {$accessToken}");
+    protected function getNewAccessToken() {
+        if (empty($this->accessToken)) {
+            return $this->getAccessToken();
+        }
+
+        $this->authentication->invalidateAccessToken();
+        $this->accessToken = null;
+        return $this->getAccessToken();
     }
 
     /**
@@ -411,9 +410,9 @@ class Client implements LoggerAwareInterface
         return $jsonResponse['id'];
     }
 
-    protected function post($path, $headers = array(), $body = null, $options = array())
+    protected function post($path, $headers = array(), $body = null)
     {
-        return $this->requestWithAutomaticReauthorize('POST', $path, $headers, $body, $options);
+        return $this->requestWithAutomaticReauthorize('POST', $path, $headers, $body);
     }
 
     /**
@@ -462,9 +461,9 @@ class Client implements LoggerAwareInterface
         return true;
     }
 
-    protected function patch($path, $headers = array(), $body = null, $options = array())
+    protected function patch($path, $headers = array(), $body = null)
     {
-        return $this->requestWithAutomaticReauthorize('PATCH', $path, $headers, $body, $options);
+        return $this->requestWithAutomaticReauthorize('PATCH', $path, $headers, $body);
     }
 
     /**

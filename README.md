@@ -15,17 +15,15 @@ Initialize the `Salesforce\Client` class, call the APIs you want.
 ```php
 use Obto\Salesforce;
 use Obto\Salesforce\Exception;
-use Guzzle\Http;
 
 $authentication = new Salesforce\Authentication\PasswordAuthentication(
 	"ClientId",
 	"ClientSecret",
 	"Username",
 	"Password",
-	"SecurityToken",
-	new Http\Client()
+	"SecurityToken"
 );
-$salesforce = new Salesforce\Client($authentication, new Http\Client(), "na5");
+$salesforce = new Salesforce\Client($authentication, "na5");
 
 try {
 	$contactQueryResults = $salesforce->query("SELECT AccountId, LastName

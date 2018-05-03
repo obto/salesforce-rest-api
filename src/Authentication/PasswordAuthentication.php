@@ -1,7 +1,6 @@
 <?php
 namespace Obto\Salesforce\Authentication;
 
-use Guzzle\Http;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
@@ -9,7 +8,6 @@ use Obto\Salesforce\Exception;
 
 class PasswordAuthentication implements AuthenticationInterface, LoggerAwareInterface
 {
-
     /** @var LoggerInterface */
     protected $log;
     /** @var string */
@@ -24,7 +22,7 @@ class PasswordAuthentication implements AuthenticationInterface, LoggerAwareInte
     protected $securityToken;
     /** @var string */
     protected $accessToken;
-    /** @var Http\Client */
+    /** @var \GuzzleHttp\Client */
     private $guzzle;
 
     public function __construct(
@@ -33,7 +31,6 @@ class PasswordAuthentication implements AuthenticationInterface, LoggerAwareInte
         $username,
         $password,
         $securityToken,
-        Http\Client $guzzle,
         LoggerInterface $log = null,
         $loginApiUrl = "https://login.salesforce.com/services/"
     ) {
@@ -43,8 +40,8 @@ class PasswordAuthentication implements AuthenticationInterface, LoggerAwareInte
         $this->username = $username;
         $this->password = $password;
         $this->securityToken = $securityToken;
-        $this->guzzle = $guzzle;
-        $this->guzzle->setBaseUrl($loginApiUrl);
+
+        $this->guzzle = new \GuzzleHttp\Client(['base_uri' => $loginApiUrl]);
     }
 
     /**
@@ -56,16 +53,18 @@ class PasswordAuthentication implements AuthenticationInterface, LoggerAwareInte
             return $this->accessToken;
         }
 
-        $postFields = array(
-            'grant_type' => 'password',
-            'client_id' => $this->clientId,
-            'client_secret' => $this->clientSecret,
-            'username' => $this->username,
-            'password' => $this->password . $this->securityToken,
-        );
-        $request = $this->guzzle->post('oauth2/token', null, $postFields);
-        $request->setAuth('user', 'pass');
-        $response = $request->send();
+        $response = $this->guzzle->request('POST', 'oauth2/token', [
+            'form_params' => [
+                'grant_type' => 'password',
+                'client_id' => $this->clientId,
+                'client_secret' => $this->clientSecret,
+                'username' => $this->username,
+                'password' => $this->password . $this->securityToken
+            ],
+            'auth' => [
+                'user', 'pass'
+            ]
+        ]);
         $responseBody = $response->getBody();
         $jsonResponse = json_decode($responseBody, true);
 
