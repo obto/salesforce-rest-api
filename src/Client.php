@@ -181,7 +181,7 @@ class Client implements LoggerAwareInterface
     protected function request($type, $path, $headers = array(), $body = null)
     {
         $accessToken = $this->getAccessToken();
-        $headers = array_marge($headers, ['Authorization' => "Bearer {$accessToken}"]);
+        $headers = array_merge($headers, ['Authorization' => "Bearer {$accessToken}"]);
 
         $responseBody;
         try {
