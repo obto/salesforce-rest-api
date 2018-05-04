@@ -159,7 +159,7 @@ class Client implements LoggerAwareInterface
         );
     }
 
-    protected function get($path, $headers = array())
+    public function get($path, $headers = array())
     {
         return $this->requestWithAutomaticReauthorize('GET', $path, $headers);
     }
@@ -406,7 +406,7 @@ class Client implements LoggerAwareInterface
         return $jsonResponse['id'];
     }
 
-    protected function post($path, $headers = array(), $body = null)
+    public function post($path, $headers = array(), $body = null)
     {
         return $this->requestWithAutomaticReauthorize('POST', $path, $headers, $body);
     }
@@ -457,7 +457,7 @@ class Client implements LoggerAwareInterface
         return true;
     }
 
-    protected function patch($path, $headers = array(), $body = null)
+    public function patch($path, $headers = array(), $body = null)
     {
         return $this->requestWithAutomaticReauthorize('PATCH', $path, $headers, $body);
     }
