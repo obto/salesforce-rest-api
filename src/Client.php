@@ -243,27 +243,23 @@ class Client implements LoggerAwareInterface
      */
     protected function getExceptionForSalesforceError($message, $code, $fields)
     {
-        if (!empty($fields)) {
-            return new Exception\SalesforceFields($message, $code, $fields);
-        }
-
         if ($code === Exception\SessionExpired::ERROR_CODE) {
-            return new Exception\SessionExpired($message, $code);
+            return new Exception\SessionExpired($message, $code, $fields);
         }
 
         if ($code === Exception\RequestRefused::ERROR_CODE) {
-            return new Exception\RequestRefused($message, $code);
+            return new Exception\RequestRefused($message, $code, $fields);
         }
 
         if ($code === Exception\ResourceNotFound::ERROR_CODE) {
-            return new Exception\ResourceNotFound($message, $code);
+            return new Exception\ResourceNotFound($message, $code, $fields);
         }
 
         if ($code === Exception\UnsupportedFormat::ERROR_CODE) {
-            return new Exception\UnsupportedFormat($message, $code);
+            return new Exception\UnsupportedFormat($message, $code, $fields);
         }
 
-        return new Exception\Salesforce($message, $code);
+        return new Exception\Salesforce($message, $code, $fields);
     }
 
     /**
